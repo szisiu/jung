@@ -212,7 +212,7 @@ This will create a new [release](https://github.com/jrtom/jung/releases) on GitH
 ## Post-release
 
 Create a CL/commit that updates the versions from (for instance)
-`2.1-SNAPSHOT` to the next development version (typically `2.2-SNAPSHOT`).
+`2.1-SNAPSHOT` to the next development version (typically `2.2.1-SNAPSHOT`).
 This commit should also contain any changes that were necessary to release
 the project which need to be persisted (any upgraded dependencies, etc.)
 

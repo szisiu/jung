@@ -33,7 +33,7 @@ To add a dependency on this release of JUNG using Maven, use the following for e
 
 ### Snapshots
 
-Snapshots of JUNG built from the `master` branch are available through Maven using version `2.2-SNAPSHOT`.
+Snapshots of JUNG built from the `master` branch are available through Maven using version `2.2.1-SNAPSHOT`.
 
 ### Links
 

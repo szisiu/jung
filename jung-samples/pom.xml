@@ -4,7 +4,7 @@
   <parent>
     <groupId>net.sf.jung</groupId>
     <artifactId>jung-parent</artifactId>
-    <version>2.2-SNAPSHOT</version>
+    <version>2.2.1-SNAPSHOT</version>
   </parent>
   <artifactId>jung-samples</artifactId>
   <name>JUNG - Samples</name>
@@ -59,8 +59,8 @@
 
   <profiles>
     <profile>
-      <!-- build with assembly - this is the default. Run with "-P!assembly" 
-        to disable. TODO(cgruber) should this be a shaded uber jar, or assembled 
+      <!-- build with assembly - this is the default. Run with "-P!assembly"
+        to disable. TODO(cgruber) should this be a shaded uber jar, or assembled
         via the maven-assembly-plugin? -->
       <id>assembly</id>
       <activation>
