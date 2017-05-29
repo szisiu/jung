@@ -1,7 +1,7 @@
 /*
  * Created on Apr 2, 2006
  *
- * Copyright (c) 2006, The JUNG Authors 
+ * Copyright (c) 2006, The JUNG Authors
  *
  * All rights reserved.
  *
@@ -11,24 +11,24 @@
  */
 package edu.uci.ics.jung.graph;
 
+import edu.uci.ics.jung.graph.util.EdgeType;
+import edu.uci.ics.jung.graph.util.Pair;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.graph.util.Pair;
-
 /**
- * Abstract implementation of the <code>Graph</code> interface.  
+ * Abstract implementation of the <code>Graph</code> interface.
  * Designed to simplify implementation of new graph classes.
- * 
+ *
  * @author Joshua O'Madadhain
  */
 @SuppressWarnings("serial")
-public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable 
+public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
 {
-	public boolean addEdge(E edge, Collection<? extends V> vertices) 
+	public boolean addEdge(E edge, Collection<? extends V> vertices)
 	{
 		return addEdge(edge, vertices, this.getDefaultEdgeType());
 	}
@@ -38,8 +38,8 @@ public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
 	    if (vertices == null)
 	        throw new IllegalArgumentException("'vertices' parameter must not be null");
 	    if (vertices.size() == 2)
-	        return addEdge(edge, 
-	        			   vertices instanceof Pair ? (Pair<V>)vertices : new Pair<V>(vertices), 
+	        return addEdge(edge,
+	        			   vertices instanceof Pair ? (Pair<V>)vertices : new Pair<V>(vertices),
 	        			   edgeType);
         else if (vertices.size() == 1)
         {
@@ -49,7 +49,7 @@ public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
         else
             throw new IllegalArgumentException("Graph objects connect 1 or 2 vertices; vertices arg has " + vertices.size());
 	}
-	
+
 	public boolean addEdge(E e, V v1, V v2)
 	{
 		return addEdge(e, v1, v2, this.getDefaultEdgeType());
@@ -59,11 +59,11 @@ public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
 	{
 		return addEdge(e, new Pair<V>(v1, v2), edge_type);
 	}
-	
+
 	/**
 	 * Adds {@code edge} to this graph with the specified {@code endpoints},
 	 * with the default edge type.
-	 * 
+	 *
 	 * @param edge the edge to be added
 	 * @param endpoints the endpoints to be connected to this edge
 	 * @return {@code true} iff the graph was modified as a result of this call
@@ -72,11 +72,11 @@ public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
 	{
 		return addEdge(edge, endpoints, this.getDefaultEdgeType());
 	}
-	
+
     /**
      * Adds {@code edge} to this graph with the specified {@code endpoints}
      * and {@code EdgeType}.
-     * 
+     *
 	 * @param edge the edge to be added
 	 * @param endpoints the endpoints to be connected to this edge
 	 * @param edgeType the type of edge to add
@@ -88,17 +88,17 @@ public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
     {
         if (edge == null)
             throw new IllegalArgumentException("input edge may not be null");
-        
+
         if (endpoints == null)
             throw new IllegalArgumentException("endpoints may not be null");
-        
+
         Pair<V> new_endpoints = new Pair<V>(endpoints.getFirst(), endpoints.getSecond());
         if (containsEdge(edge))
         {
             Pair<V> existing_endpoints = getEndpoints(edge);
             if (!existing_endpoints.equals(new_endpoints)) {
-                throw new IllegalArgumentException("edge " + edge + 
-                        " already exists in this graph with endpoints " + existing_endpoints + 
+                throw new IllegalArgumentException("edge " + edge +
+                        " already exists in this graph with endpoints " + existing_endpoints +
                         " and cannot be added with endpoints " + endpoints);
             } else {
                 return null;
@@ -106,7 +106,7 @@ public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
         }
         return new_endpoints;
     }
-    
+
     public int inDegree(V vertex)
     {
         return this.getInEdges(vertex).size();
@@ -175,17 +175,17 @@ public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
         else
             return 2;
     }
-    
+
     public V getOpposite(V vertex, E edge)
     {
-        Pair<V> incident = this.getEndpoints(edge); 
+        Pair<V> incident = this.getEndpoints(edge);
         V first = incident.getFirst();
         V second = incident.getSecond();
         if (vertex.equals(first))
             return second;
         else if (vertex.equals(second))
             return first;
-        else 
+        else
             throw new IllegalArgumentException(vertex + " is not incident to " + edge + " in this graph");
     }
 
@@ -198,15 +198,15 @@ public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
         }
         return null;
     }
-    
+
     public Collection<E> findEdgeSet(V v1, V v2)
     {
         if (!getVertices().contains(v1))
             throw new IllegalArgumentException(v1 + " is not an element of this graph");
-        
+
         if (!getVertices().contains(v2))
             throw new IllegalArgumentException(v2 + " is not an element of this graph");
-        
+
         Collection<E> edges = new ArrayList<E>();
         for (E e : getOutEdges(v1))
         {
@@ -215,17 +215,17 @@ public abstract class AbstractGraph<V, E> implements Graph<V,E>, Serializable
         }
         return Collections.unmodifiableCollection(edges);
     }
-    
+
     public Collection<V> getIncidentVertices(E edge)
     {
         Pair<V> endpoints = this.getEndpoints(edge);
         Collection<V> incident = new ArrayList<V>();
         incident.add(endpoints.getFirst());
         incident.add(endpoints.getSecond());
-        
+
         return Collections.unmodifiableCollection(incident);
     }
-    
+
     @Override
     public String toString() {
     	StringBuffer sb = new StringBuffer("Vertices:");

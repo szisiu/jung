@@ -63,12 +63,12 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>1.6</java.version>
+    <java.version>1.8</java.version>
 
     <!-- TODO(cgruber): Audit and update dependencies, particularly google deps. -->
     <junit.version>4.12</junit.version>
     <guava.version>19.0</guava.version>
-    
+
     <cobertura.plugin.version>2.7</cobertura.plugin.version>
     <compiler.plugin.version>3.5.1</compiler.plugin.version>
     <gpg.plugin.version>1.6</gpg.plugin.version>
@@ -78,7 +78,7 @@
     <pmd.plugin.version>3.6</pmd.plugin.version>
     <release.plugin.version>2.5.3</release.plugin.version>
     <surefire.plugin.version>2.19.1</surefire.plugin.version>
-    <source.plugin.version>3.0.1</source.plugin.version>    
+    <source.plugin.version>3.0.1</source.plugin.version>
   </properties>
   <developers>
     <developer>
