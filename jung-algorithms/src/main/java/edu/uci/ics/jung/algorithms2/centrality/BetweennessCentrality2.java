@@ -7,8 +7,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import edu.uci.ics.jung.algorithms.scoring.EdgeScorer;
 import edu.uci.ics.jung.algorithms.scoring.VertexScorer;
-import edu.uci.ics.jung.algorithms2.util.FibonacciHeap;
-import edu.uci.ics.jung.algorithms2.util.FibonacciHeapNode;
+import edu.uci.ics.jung.algorithms.util.MapBinaryHeap;
 import edu.uci.ics.jung.graph.AbstractGraph;
 import edu.uci.ics.jung.graph.AbstractHypergraph;
 import edu.uci.ics.jung.graph.Hypergraph;
@@ -17,6 +16,7 @@ import edu.uci.ics.jung.graph.UndirectedHypergraph;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +37,8 @@ import java.util.Queue;
  * @see <a href=https://github.com/jgrapht/jgrapht/blob/master/jgrapht-core/src/main/java/org/jgrapht/alg/scoring/BetweennessCentrality.java>jgrapht implementation</a>
  * @see <a href=https://github.com/graphstream/gs-algo/blob/master/src/org/graphstream/algorithm/BetweennessCentrality.java>graphstream implementation</a>
  */
-public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, EdgeScorer<E, Double> {
+@Deprecated
+public class BetweennessCentrality2<V, E> implements VertexScorer<V, Double>, EdgeScorer<E, Double> {
 
     private Hypergraph<V, E> graph;
 
@@ -53,10 +54,10 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
      *
      * @param graph the graph for which the scores are to be calculated
      */
-    public BetweennessCentrality(Hypergraph<V, E> graph, boolean normalize) {
+    public BetweennessCentrality2(Hypergraph<V, E> graph, boolean normalize) {
         initialize(graph);
         calculateBetweenness(
-            false,
+            new MapBinaryHeap<V>(new BetweennessVertexComparatorSmallerFirst()),
             Functions.<Double>constant(1.0),
             normalize);
     }
@@ -71,7 +72,7 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
      * @param graph the graph for which the scores are to be calculated
      * @param edge_weights the edge weights to be used in the path length calculations
      */
-    public BetweennessCentrality(Hypergraph<V, E> graph, Function<? super E, Double> edge_weights, boolean normalize) {
+    public BetweennessCentrality2(Hypergraph<V, E> graph, Function<? super E, Double> edge_weights, boolean normalize) {
         // reject negative-weight edges up front
         for (E e : graph.getEdges()) {
             double e_weight = edge_weights.apply(e);
@@ -82,7 +83,7 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
 
         initialize(graph);
         calculateBetweenness(
-            true,
+            new MapBinaryHeap<V>(new BetweennessVertexComparatorSmallerFirst()),
             edge_weights,
             normalize);
     }
@@ -102,11 +103,13 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
         }
     }
 
-    private void calculateBetweenness(boolean weighted, Function<? super E, Double> edge_weights, boolean normalize) {
+    private void calculateBetweenness(Queue<V> Q,
+                                      Function<? super E, Double> edge_weights,
+                                      boolean normalize) {
         for (V s : graph.getVertices()) {
-            // System.out.println();
-            // System.out.println("--- s ---");
-            // System.out.println("s: " + s.toString());
+            System.out.println();
+            System.out.println("--- s ---");
+            System.out.println("s: " + s.toString());
 
             // initialize the betweenness data for this new vertex
             for (V v : graph.getVertices()) {
@@ -116,18 +119,13 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
             vertex_data.get(s).pathCount = 1; //sigma
             vertex_data.get(s).distance = 0; //d
 
+            System.out.println();
+
             ArrayDeque<V> S = new ArrayDeque<V>(graph.getVertexCount());
 
-            CustomQueue<V,Double> Q;
-            if(weighted) {
-                Q = new WeightedQueue();
-            } else {
-                Q = new UnweightedQueue();
-            }
-            Q.insert(s, 0.0);
+            Q.offer(s);
 
-            // System.out.println();
-            // System.out.println("--- path count ---");
+            System.out.println("--- path count ---");
 
             // 1. compute the length and the number of shortest paths between all s to v
             while (!Q.isEmpty()) {
@@ -137,46 +135,44 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
                 BetweennessVertexData v_data = vertex_data.get(v);
 
                 Multimap<V, E> v_opposite = getNeighbors(v, graph.getOutEdges(v));
-                // System.out.println();
-                // System.out.println("v: " + v.toString() + "; data: " + v_data.toString());
-                // System.out.println("neighbors: " + v_opposite.toString());
+                System.out.println();
+                System.out.println("v: " + v.toString() + "; data: " + v_data.toString());
+                System.out.println("neighbors: " + v_opposite.toString());
 
                 for (Map.Entry<V, E> v_opposite_entry : v_opposite.entries()) {
-                    // System.out.println();
-                    // System.out.println("edge(v-w): " + v_opposite_entry.getValue().toString());
+                    System.out.println();
+                    System.out.println("edge(v-w): " + v_opposite_entry.getValue().toString());
 
                     V w = v_opposite_entry.getKey();
                     Double wv_weight = edge_weights.apply(v_opposite_entry.getValue());
                     BetweennessVertexData w_data = vertex_data.get(w);
                     Double dist = v_data.distance + wv_weight;
 
-                    // System.out.println(" w: " + w.toString() + "; data: " + w_data.toString());
+                    System.out.println(" w: " + w.toString() + "; data: " + w_data.toString());
 
                     // w found for the first time?
-                    if (w_data.distance == Double.POSITIVE_INFINITY) {
-                        Q.insert(w, dist);
+                    if (w_data.distance < 0) {
+                        Q.offer(w);
                         w_data.distance = dist;
                     }
 
                     // shortest path to w via v?
                     if (w_data.distance >= dist) {
                         w_data.distance = dist;
-                        Q.update(w, dist);
-                        // MapBinaryHeap<V> tmp = (MapBinaryHeap<V>) Q;
-                        // if(tmp.contains(w)) {
-                        //     tmp.update(w);
-                        // }
+                        MapBinaryHeap<V> tmp = (MapBinaryHeap<V>) Q;
+                        if(tmp.contains(w)) {
+                            tmp.update(w);
+                        }
 
                         w_data.pathCount = w_data.pathCount + v_data.pathCount;
                         w_data.predEdges.add(v_opposite_entry.getValue());
                         w_data.predVertices.add(v);
-                        // System.out.println("*w: " + w.toString() + "; data: " + w_data.toString());
+                        System.out.println("*w: " + w.toString() + "; data: " + w_data.toString());
                     }
                 }
             }
 
-            // System.out.println();
-            // System.out.println("--- pair-dependency ---");
+            System.out.println("--- pair-dependency ---");
 
             // 2. sum all pair dependencies. The pair-dependency of s and v in w
             // S returns vertices in order of non-increasing distance from s
@@ -184,16 +180,28 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
                 V w = S.pop();
                 List<V> w_pred_vertices = vertex_data.get(w).predVertices;
 
-                // System.out.println();
-                // System.out.println(" w: " + w.toString() + "; data: " + vertex_data.get(w).toString());
+                System.out.println();
+                System.out.println(" w: " + w.toString() + "; data: " + vertex_data.get(w).toString());
+
+                // for (Map.Entry<V, E> w_pred_entry : w_pred_edges.entries()) {
+                //     V v = w_pred_entry.getKey();
+                //     System.out.println(" v: " + v.toString() + "; data: " + vertex_data.get(v).toString());
+                //
+                //     Double delta = (vertex_data.get(v).pathCount / vertex_data.get(w).pathCount) * (1.0 + vertex_data.get(w).delta);
+                //     vertex_data.get(v).delta += delta;
+                //     System.out.println("*v: " + v.toString() + "; data: " + vertex_data.get(v).toString());
+                //
+                //     Double e_score = edge_scores.get(w_pred_entry.getValue()) + delta;
+                //     edge_scores.put(w_pred_entry.getValue(), e_score);
+                // }
 
                 for (V v : w_pred_vertices) {
-                    // System.out.println(" v: " + v.toString() + "; data: " + vertex_data.get(v).toString());
+                    System.out.println(" v: " + v.toString() + "; data: " + vertex_data.get(v).toString());
 
                     Double delta = (vertex_data.get(v).pathCount / vertex_data.get(w).pathCount) * (1.0 + vertex_data.get(w).delta);
                     if(delta > 0) {
                         vertex_data.get(v).delta = vertex_data.get(v).delta + delta;
-                        // System.out.println("*v: " + v.toString() + "; data: " + vertex_data.get(v).toString());
+                        System.out.println("*v: " + v.toString() + "; data: " + vertex_data.get(v).toString());
                     }
 
                     // TODO edge scores
@@ -203,7 +211,7 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
 
                 if (!w.equals(s)) {
                     Double w_score = vertex_scores.get(w) + vertex_data.get(w).delta;
-                    // System.out.println("*w: " + w.toString() + "; bc: " + vertex_scores.get(w) + " -> " + w_score);
+                    System.out.println("*w: " + w.toString() + "; bc: " + vertex_scores.get(w) + " -> " + w_score);
                     vertex_scores.put(w, w_score);
                 }
             }
@@ -265,7 +273,7 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
         double delta;
 
         BetweennessVertexData() {
-            distance = Double.POSITIVE_INFINITY;
+            distance = -1;
             pathCount = 0;
             predVertices = new ArrayList<>();
             predEdges = new ArrayList<>();
@@ -284,72 +292,35 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
         }
     }
 
-    private interface CustomQueue<T, D> {
-
-        void insert(T t, D d);
-
-        void update(T t, D d);
-
-        T remove();
-
-        boolean isEmpty();
+    /**
+     * Increasing comparator used for priority queues.
+     */
+    protected class BetweennessVertexComparatorLargerFirst implements Comparator<V> {
+        @Override
+        public int compare(V x, V y) {
+            double yy = vertex_data.get(y).distance;
+            double xx = vertex_data.get(x).distance;
+            if (xx > yy)
+                return -1;
+            else if (xx < yy)
+                return 1;
+            return 0;
+        }
     }
 
-    private class WeightedQueue implements CustomQueue<V, Double> {
-
-        FibonacciHeap<V> delegate = new FibonacciHeap<>();
-        Map<V, FibonacciHeapNode<V>> seen = new HashMap<>();
-
+    /**
+     * Decreasing comparator used for priority queues.
+     */
+    protected class BetweennessVertexComparatorSmallerFirst implements Comparator<V> {
         @Override
-        public void insert(V t, Double d) {
-            FibonacciHeapNode<V> node = new FibonacciHeapNode<>(t);
-            delegate.insert(node, d);
-            seen.put(t, node);
+        public int compare(V x, V y) {
+            double yy = vertex_data.get(y).distance;
+            double xx = vertex_data.get(x).distance;
+            if (xx > yy)
+                return 1;
+            else if (xx < yy)
+                return -1;
+            return 0;
         }
-
-        @Override
-        public void update(V t, Double d) {
-            if (!seen.containsKey(t)) {
-                throw new IllegalArgumentException("Element " + t + " does not exist in queue");
-            }
-            delegate.decreaseKey(seen.get(t), d);
-        }
-
-        @Override
-        public V remove() {
-            return delegate.removeMin().getData();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return delegate.isEmpty();
-        }
-
-    }
-
-    private class UnweightedQueue implements CustomQueue<V, Double> {
-
-        Queue<V> delegate = new ArrayDeque<>();
-
-        @Override
-        public void insert(V t, Double d) {
-            delegate.add(t);
-        }
-
-        @Override
-        public void update(V t, Double d) {
-            // do nothing
-        }
-
-        @Override
-        public V remove() {
-            return delegate.remove();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return delegate.isEmpty();
-        }
-
     }
 }
