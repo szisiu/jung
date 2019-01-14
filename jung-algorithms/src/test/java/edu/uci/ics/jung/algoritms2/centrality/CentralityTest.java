@@ -14,17 +14,15 @@ import org.junit.Test;
 public class CentralityTest {
 
     private static final boolean SHOULD_NORM = false;
+    // normalization -  2 options proposed
+    // freqAvg/freq
+    // double norm = g.getEdges().stream().mapToDouble(e -> e.getFreq()).average().getAsDouble();
+    // freqMax/freq
+    // double norm = g.getEdges().stream().mapToDouble(e -> e.getFreq()).max().getAsDouble();
     private static final Function<EdgeData, Double> FREQ_FN = e -> e.getFreq();
     private static final Function<EdgeData, Double> STR_FN = e -> e.getFreq() / (e.getCard() - 1);
 
     private void displayCentralities(Hypergraph<VertexData, EdgeData> g) {
-
-        // normalization -  2 options proposed
-        // freqAvg/freq
-        // double norm = g.getEdges().stream().mapToDouble(e -> e.getFreq()).average().getAsDouble();
-        // freqMax/freq
-        // double norm = g.getEdges().stream().mapToDouble(e -> e.getFreq()).max().getAsDouble();
-
         DegreeCentrality<VertexData, EdgeData> degreeIn = new DegreeCentrality<>(g, CentralityMode.IN);
         DegreeCentrality<VertexData, EdgeData> degreeOut = new DegreeCentrality<>(g, CentralityMode.OUT);
         DegreeCentrality<VertexData, EdgeData> degree = new DegreeCentrality<>(g, CentralityMode.TOTAL);
