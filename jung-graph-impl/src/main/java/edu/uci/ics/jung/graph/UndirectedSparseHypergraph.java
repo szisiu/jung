@@ -136,6 +136,7 @@ public class UndirectedSparseHypergraph<V, E> extends AbstractTypedHypergraph<V,
         return Collections.unmodifiableCollection(edges);
     }
 
+    @Deprecated
     @Override
     public V getDest(E directed_edge) {
         return null;
@@ -218,6 +219,7 @@ public class UndirectedSparseHypergraph<V, E> extends AbstractTypedHypergraph<V,
         return getNeighbors(vertex);
     }
 
+    @Deprecated
     @Override
     public V getSource(E directed_edge) {
         return null;

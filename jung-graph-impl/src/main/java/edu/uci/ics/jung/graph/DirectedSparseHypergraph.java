@@ -197,6 +197,7 @@ public class DirectedSparseHypergraph<V, E> extends AbstractTypedHypergraph<V, E
         return Collections.unmodifiableCollection(edges);
     }
 
+    @Deprecated
     @Override
     public V getDest(E directed_edge) {
         return null;
@@ -319,6 +320,7 @@ public class DirectedSparseHypergraph<V, E> extends AbstractTypedHypergraph<V, E
         return Sets.newHashSet(vertices.get(vertex).getFirst().keySet());
     }
 
+    @Deprecated
     @Override
     public V getSource(E directed_edge) {
         return null;

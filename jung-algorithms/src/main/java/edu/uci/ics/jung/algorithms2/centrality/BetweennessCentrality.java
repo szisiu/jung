@@ -16,6 +16,7 @@ import edu.uci.ics.jung.graph.UndirectedGraph;
 import edu.uci.ics.jung.graph.UndirectedHypergraph;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -168,8 +169,7 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
                         // }
 
                         w_data.pathCount = w_data.pathCount + v_data.pathCount;
-                        w_data.predEdges.add(v_opposite_entry.getValue());
-                        w_data.predVertices.add(v);
+                        w_data.pred.add(new PredData(v_opposite_entry.getValue(), v));
                         // System.out.println("*w: " + w.toString() + "; data: " + w_data.toString());
                     }
                 }
@@ -182,23 +182,21 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
             // S returns vertices in order of non-increasing distance from s
             while (!S.isEmpty()) {
                 V w = S.pop();
-                List<V> w_pred_vertices = vertex_data.get(w).predVertices;
 
                 // System.out.println();
                 // System.out.println(" w: " + w.toString() + "; data: " + vertex_data.get(w).toString());
 
-                for (V v : w_pred_vertices) {
+                for (PredData pred : vertex_data.get(w).pred) {
                     // System.out.println(" v: " + v.toString() + "; data: " + vertex_data.get(v).toString());
 
-                    Double delta = (vertex_data.get(v).pathCount / vertex_data.get(w).pathCount) * (1.0 + vertex_data.get(w).delta);
+                    Double delta = (vertex_data.get(pred.v).pathCount / vertex_data.get(w).pathCount) * (1.0 + vertex_data.get(w).delta);
                     if(delta > 0) {
-                        vertex_data.get(v).delta = vertex_data.get(v).delta + delta;
+                        vertex_data.get(pred.v).delta = vertex_data.get(pred.v).delta + delta;
                         // System.out.println("*v: " + v.toString() + "; data: " + vertex_data.get(v).toString());
                     }
 
-                    // TODO edge scores
-                    // Double e_score = edge_scores.get(w_pred_entry.getValue()) + delta;
-                    // edge_scores.put(w_pred_entry.getValue(), e_score);
+                    Double e_score = edge_scores.get(pred.e) + delta;
+                    edge_scores.put(pred.e, e_score);
                 }
 
                 if (!w.equals(s)) {
@@ -257,18 +255,15 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
     }
 
     private class BetweennessVertexData {
-
         double distance; //d
         double pathCount; //sigma
-        List<E> predEdges;
-        List<V> predVertices;
+        List<PredData> pred;
         double delta;
 
         BetweennessVertexData() {
             distance = Double.POSITIVE_INFINITY;
             pathCount = 0;
-            predVertices = new ArrayList<>();
-            predEdges = new ArrayList<>();
+            pred = new ArrayList<>();
             delta = 0;
         }
 
@@ -277,9 +272,26 @@ public class BetweennessCentrality<V, E> implements VertexScorer<V, Double>, Edg
             return MoreObjects.toStringHelper(this)
                               .add("distance", distance)
                               .add("pathCount", pathCount)
-                              .add("predEdges", predEdges)
-                              .add("predVertices", predVertices)
+                              .add("pred", Arrays.deepToString(pred.toArray()))
                               .add("delta", delta)
+                              .toString();
+        }
+    }
+
+    private class PredData {
+        E e;
+        V v;
+
+        PredData(E edge, V vertex) {
+            this.e = edge;
+            this.v = vertex;
+        }
+
+        @Override
+        public String toString() {
+            return MoreObjects.toStringHelper(this)
+                              .add("e", e)
+                              .add("v", v)
                               .toString();
         }
     }
